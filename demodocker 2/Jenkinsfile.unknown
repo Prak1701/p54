@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/Prak1701/p54'
+            }
+        }
+
+        stage('Build and Run with Docker Compose') {
+            steps {
+                script {
+                    sh 'docker-compose -f demodocker/docker-compose.yaml up --build -d'
+                }
+            }
+        }
+    }
+}
