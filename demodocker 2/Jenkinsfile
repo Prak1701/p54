@@ -2,25 +2,36 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repo') {
             steps {
-                // Clone your GitHub repo
-                git 'https://github.com/Prak1701/p54.git'
+                echo 'Cloning the repository...'
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                // Build containers using docker-compose
-                sh 'docker-compose build'
+                dir('demodocker2') {
+                    echo 'Building Docker image...'
+                    sh 'docker build -t myapp .'
+                }
             }
         }
 
-        stage('Run Docker Containers') {
+        stage('Run Docker Container') {
             steps {
-                // Run containers in detached mode
-                sh 'docker-compose up -d'
+                dir('demodocker2') {
+                    echo 'Running Docker container...'
+                    sh 'docker run -d -p 8080:80 --name myappcontainer myapp'
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            sh 'docker rm -f myappcontainer || true'
         }
     }
 }
