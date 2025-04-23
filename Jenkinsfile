@@ -2,36 +2,29 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repo') {
+        stage('Clone Repository') {
             steps {
-                echo 'Cloning the repository...'
-                checkout scm
+                git 'https://github.com/Prak1701/p54.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker') {
             steps {
-                dir('demodocker2') {
-                    echo 'Building Docker image...'
-                    sh 'docker build -t myapp .'
-                }
+                sh 'docker-compose -f demodocker2/docker-compose.yml build'
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Run Docker') {
             steps {
-                dir('demodocker2') {
-                    echo 'Running Docker container...'
-                    sh 'docker run -d -p 8080:80 --name myappcontainer myapp'
-                }
+                sh 'docker-compose -f demodocker2/docker-compose.yml up -d'
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning up...'
-            sh 'docker rm -f myappcontainer || true'
+            echo 'Cleaning up Docker containers...'
+            sh 'docker-compose -f demodocker2/docker-compose.yml down || true'
         }
     }
 }
