@@ -1,22 +1,26 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "my-docker-image"
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Prak1701/p54.git'
+                git branch: 'main', url: 'https://github.com/Prak1701/p54.git'
             }
         }
 
         stage('Build Docker') {
             steps {
-                sh 'docker-compose -f demodocker2/docker-compose.yml build'
+                bat 'docker build -t %IMAGE_NAME% .'
             }
         }
 
         stage('Run Docker') {
             steps {
-                sh 'docker-compose -f demodocker2/docker-compose.yml up -d'
+                bat 'docker run -d --name my-container -p 3000:3000 %IMAGE_NAME%'
             }
         }
     }
@@ -24,7 +28,7 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker containers...'
-            sh 'docker-compose -f demodocker2/docker-compose.yml down || true'
+            bat 'docker rm -f my-container || exit 0'
         }
     }
 }
