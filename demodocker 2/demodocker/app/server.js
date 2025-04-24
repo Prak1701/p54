@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, "index.html"));
-  });
+});
 
 app.get('/profile-picture', function (req, res) {
   let img = fs.readFileSync(path.join(__dirname, "images/profile-1.jpg"));
@@ -20,18 +20,16 @@ app.get('/profile-picture', function (req, res) {
   res.end(img, 'binary');
 });
 
-// use when starting application locally
-let mongoUrl = "mongodb://admin:password@localhost:27017";
+// Always connect to the Docker container's MongoDB service
+let mongoUrl = "mongodb://admin:password@mongodb:27017";
 
-// use when starting application as docker container
-let mongoUrlDocker = "mongodb://admin:password@mongodb";
-
-// pass these options to mongo client connect request to avoid DeprecationWarning for current Server Discovery and Monitoring engine
+// MongoDB connection options
 let mongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
-// "user-account" in demo with docker. "my-db" in demo with docker-compose
+// Database name
 let databaseName = "my-db";
 
+// Update user profile
 app.post('/update-profile', function (req, res) {
   let userObj = req.body;
 
@@ -44,19 +42,20 @@ app.post('/update-profile', function (req, res) {
     let myquery = { userid: 1 };
     let newvalues = { $set: userObj };
 
-    db.collection("users").updateOne(myquery, newvalues, {upsert: true}, function(err, res) {
+    db.collection("users").updateOne(myquery, newvalues, {upsert: true}, function(err, result) {
       if (err) throw err;
       client.close();
     });
-
   });
+
   // Send response
   res.send(userObj);
 });
 
+// Get user profile
 app.get('/get-profile', function (req, res) {
   let response = {};
-  // Connect to the db
+
   MongoClient.connect(mongoUrl, mongoClientOptions, function (err, client) {
     if (err) throw err;
 
@@ -75,6 +74,7 @@ app.get('/get-profile', function (req, res) {
   });
 });
 
+// Listen on port 3000
 app.listen(3000, function () {
   console.log("app listening on port 3000!");
 });
